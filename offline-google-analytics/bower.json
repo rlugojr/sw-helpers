@@ -1,0 +1,24 @@
+{
+  "name": "offline-google-analytics",
+  "version": "0.0.1",
+  "homepage": "https://github.com/GoogleChrome/sw-helpers",
+  "description": "Offline Google Analytics helpers for sw-toolbox",
+  "main": "bootstrap/offline-analytics.js",
+  "keywords": [
+    "offline",
+    "analytics",
+    "service-worker",
+    "google"
+  ],
+  "license": "Apache-2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "sw-toolbox": "~3.1.1"
+  }
+}
