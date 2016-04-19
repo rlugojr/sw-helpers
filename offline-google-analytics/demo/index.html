@@ -1,49 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>offline-google-analytics</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Google Analytics demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+
 <body>
+    <script>
+    // If we're running on a real web server (as opposed to localhost, which is whitelisted),
+    // then change the protocol to HTTPS.
+    // See https://goo.gl/lq4gCo for an explanation as to why this is needed for some features.
+    (function() {
+        var isLocalhost = !!(window.location.hostname === 'localhost' ||
+            // [::1] is the IPv6 localhost address.
+            window.location.hostname === '[::1]' ||
+            // 127.0.0.1/8 is considered localhost for IPv4.
+            window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
+        if (window.location.protocol === 'http:' && !isLocalhost) {
+            // Redirect to https: if we're currently using http: and we're not on localhost.
+            window.location.protocol = 'https:';
+        }
+    })();
+    </script>
 
-<script>
-  // If we're running on a real web server (as opposed to localhost, which is whitelisted),
-  // then change the protocol to HTTPS.
-  // See https://goo.gl/lq4gCo for an explanation as to why this is needed for some features.
-  (function() {
-    var isLocalhost = !!(window.location.hostname === 'localhost' ||
-      // [::1] is the IPv6 localhost address.
-      window.location.hostname === '[::1]' ||
-      // 127.0.0.1/8 is considered localhost for IPv4.
-      window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/));
-    if (window.location.protocol === 'http:' && !isLocalhost) {
-      // Redirect to https: if we're currently using http: and we're not on localhost.
-      window.location.protocol = 'https:';
-    }
-  })();
-</script>
+    <h1>Offline Google Analytics</h1>
 
-<h1>Offline Google Analytics</h1>
+    <p>Offline Google Analytics registers a service worker handler to intercepts requests for Google Analytics pings.</p>
 
-<p>Offline Google Analytics registers a service worker handler to intercepts requests for Google Analytics pings.</p>
+    <p>If the HTTP GET for the ping is successful (because the browser is online), then everything proceeds as it normally would. If the HTTP GET fails, the ping request is saved to IndexedDB, and each time the service worker script starts up it will attempt to "replay" those saved ping requests, giving up after one day has passed.</p>
+    
+    <p>The <code>qt</code> URL parameter is automatically added to the replayed HTTP GET and set to the number of milliseconds that has passed since the initial ping request was attempted, to ensure that the original time attribution is correct.</p>
+    
+    <p>Offline Google Analytics does not take care of setting up Google Analytics on your page, and assumes that you have properly configured Google Analytics tracking code registered elsewhere on your page.</p>
 
-<p>If the HTTP GET for the ping is successful (because the browser is online), then everything proceeds as it normally would. If the HTTP GET fails, the ping request is saved to IndexedDB, and each time the service worker script starts up it will attempt to "replay" those saved ping requests, giving up after one day has passed.</p>
+    <script src="../bower_components/sw-toolbox/companion.js" data-service-worker="/demo/sw-import.js"></script>
 
-<p>The qt URL parameter is automatically added to the replayed HTTP GET and set to the number of milliseconds that has passed since the initial ping request was attempted, to ensure that the original time attribution is correct.</p>
-
-<p>Offline Google Analytics does not take care of setting up Google Analytics on your page, and assumes that you have properly configured Google Analytics tracking code registered elsewhere on your page.</p>
-
-<script src="../bower_components/sw-toolbox/companion.js" data-service-worker="/demo/sw-import.js"></script>
-
-<script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    <script>
+    (function(i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function() {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
     ga('create', 'UA-46754295-1', 'auto');
     ga('send', 'pageview');
-  </script>
+    </script>
 </body>
-</html>
 
+</html>
