@@ -1,71 +1,79 @@
+'use strict';
+
+require('chai').should();
+
 const seleniumAssistant = require('selenium-assistant');
 const webdriver = require('selenium-webdriver');
 const proxy = require('selenium-webdriver/proxy');
 const express = require('express');
 
+let globalDriver;
 
+seleniumAssistant.printAvailableBrowserInfo();
 
-const browsers = seleniumAssistant.getAvailableBrowsers();
-browsers.forEach(browserInfo => {
-  if (browserInfo.getSeleniumBrowserId() !== 'chrome') {
-    return;
-  }
+function performTests(browserInfo) {
+  describe(`Test in ${browserInfo.getPrettyName()}`, function() {
+    it('should be able to use proxy', function() {
+      this.timeout(0);
+      const myProxy = proxy.manual({
+        http: '127.0.0.1:8000',
+        https: '127.0.0.1:8000'
+      });
+      const options = browserInfo.getSeleniumOptions();
+      options.setProxy(myProxy);
 
-  console.log(browserInfo.getRawVersionString());
-});
+      return browserInfo.getSeleniumDriver()
+      .then(driver => {
+        globalDriver = driver;
 
+        return new Promise((resolve, reject) => {
+          globalDriver.get('http://sw-helpers-proxy.com/proxy-test/')
+          .then(() => {
+            return globalDriver.executeScript(function() {
+              return document.body.textContent;
+            });
+          })
+          .then(pageContent => {
+            pageContent.should.equal('OK');
+          })
+          .then(() => resolve())
+          .thenCatch(reject);
+        });
+      });
+    });
+  });
+}
 
-
-
-
-
-describe('Do Test', function() {
-  let globalDriver;
-
+describe('Perform in Browser Tests', function() {
   before(function() {
     return new Promise(resolve => {
       var expressApp = express();
 
       expressApp.all('*', function (req, res) {
-        console.log('HERE <-----------------------');
+        console.log(req.url);
+        if (req.url === 'http://sw-helpers-proxy.com/proxy-test/') {
+          return res.send('OK');
+        }
         res.send('Hello World!');
       });
 
       expressApp.listen(8000, function () {
-        console.log('Example app listening on port 8000!');
         resolve();
       });
     });
-  })
+  });
 
-  it('should do something', function() {
-    this.timeout(0);
-    const builder = browsers[0].getSeleniumDriverBuilder();
-    const myProxy = proxy.manual({
-      http: '127.0.0.1:8080',
-      https: '127.0.0.1:8080'
-    });
+  afterEach(function() {
+    this.timeout(5000);
 
-    const options = browsers[0].getSeleniumOptions();
-    options.addArguments('proxy=127.0.0.1:8080');
-
-    const chromeCapabilities = webdriver.Capabilities.chrome();
-    chromeCapabilities.set(webdriver.Capability.PROXY, myProxy);
-
-    return new Promise(resolve => {
-      globalDriver = builder.withCapabilities(chromeCapabilities)
-      .setProxy(myProxy)
-      .build();
-
-      globalDriver.get('http://example.com');
-    })
+    return seleniumAssistant.killWebDriver(globalDriver)
     .then(() => {
-      return new Promise(resolve => {
-        setTimeout(resolve, 60000);
-      });
-    })
-    .then(() => {
-      seleniumAssistant.killWebDriver(globalDriver);
+      globalDriver = null;
     });
+  });
+
+  const browsers = seleniumAssistant.getAvailableBrowsers();
+  browsers.forEach(browserInfo => {
+    performTests(browserInfo);
   });
 });

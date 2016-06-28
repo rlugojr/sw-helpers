@@ -18,7 +18,13 @@
   "repository": "googlechrome/sw-helpers",
   "bugs": "https://github.com/googlechrome/sw-helpers/issues",
   "homepage": "https://github.com/GoogleChrome/sw-helpers/tree/master/projects/sw-offline-google-analytics",
+  "scripts": {
+    "download-browser": "node ./test/helpers/download-test-browsers.js",
+    "pretest": "npm run download-browser",
+    "test": "mocha ./test/*.js"
+  },
   "devDependencies": {
+    "chai": "^3.5.0",
     "express": "^4.14.0",
     "selenium-assistant": "^0.1.6",
     "selenium-webdriver": "^2.53.2"
