@@ -7,17 +7,13 @@ const webdriver = require('selenium-webdriver');
 const proxy = require('selenium-webdriver/proxy');
 const express = require('express');
 
+const SUPPORTED_BROWSER_IDS = ['chrome', 'firefox'];
+
 let globalDriver;
 
 seleniumAssistant.printAvailableBrowserInfo();
 
 function performTests(browserInfo) {
-  if (browserInfo.getSeleniumBrowserId() === 'firefox' &&
-  browserInfo.getVersionNumber() >= 47) {
-    // Firefox Marionette doesn't support proxies
-    // For info: https://github.com/mozilla/geckodriver/issues/97
-    return;
-  }
   describe(`Test in ${browserInfo.getPrettyName()}`, function() {
     it('should be able to use proxy', function() {
       this.timeout(0);
@@ -79,6 +75,21 @@ describe('Perform in Browser Tests', function() {
 
   const browsers = seleniumAssistant.getAvailableBrowsers();
   browsers.forEach(browserInfo => {
+    if (SUPPORTED_BROWSER_IDS.indexOf(
+      browserInfo.getSeleniumBrowserId()) === -1) {
+      return;
+    }
+
+    if (
+      process.env.TRAVIS === 'true' &&
+      browserInfo.getSeleniumBrowserId() === 'firefox' &&
+      browserInfo.getVersionNumber() >= 47
+    ) {
+      // Firefox Marionette doesn't support proxies
+      // For info: https://github.com/mozilla/geckodriver/issues/97
+      return;
+    }
+
     performTests(browserInfo);
   });
 });
