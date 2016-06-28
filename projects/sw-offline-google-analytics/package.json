@@ -17,5 +17,10 @@
   "license": "Apache-2.0",
   "repository": "googlechrome/sw-helpers",
   "bugs": "https://github.com/googlechrome/sw-helpers/issues",
-  "homepage": "https://github.com/GoogleChrome/sw-helpers/tree/master/projects/sw-offline-google-analytics"
+  "homepage": "https://github.com/GoogleChrome/sw-helpers/tree/master/projects/sw-offline-google-analytics",
+  "devDependencies": {
+    "express": "^4.14.0",
+    "selenium-assistant": "^0.1.6",
+    "selenium-webdriver": "^2.53.2"
+  }
 }
